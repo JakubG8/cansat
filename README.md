@@ -2,16 +2,16 @@
 
 Satelit v plechovke, pozemná stanica a webová appka na zobrazenie nameraných dát.
 
-Tento návod je písaný **od úplnej nuly** – pre niekoho, kto nemá nič nainštalované a nikdy nerobil s ESP32 ani s terminálom.
+Tento návod je písaný **od úplnej nuly** – pre niekoho, kto nemá nič nainštalované a nikdy nerobil s ESP32. Všetko sa robí vo **Visual Studio Code**.
 
 **Obsah**
 
 1. [Ako to celé funguje](#1-ako-to-celé-funguje)
 2. [Čo je v repozitári](#2-čo-je-v-repozitári)
 3. [Inštalácia programov (raz)](#3-inštalácia-programov-raz)
-4. [Stiahnutie projektu](#4-stiahnutie-projektu)
-5. [Nahratie programu do ESP32 cez terminál](#5-nahratie-programu-do-esp32-cez-terminál)
-6. [Spustenie webovej appky](#6-spustenie-webovej-appky)
+4. [Stiahnutie projektu vo VS Code](#4-stiahnutie-projektu-vo-vs-code)
+5. [Nahratie programu do ESP32 vo VS Code](#5-nahratie-programu-do-esp32-vo-vs-code)
+6. [Spustenie webovej appky vo VS Code](#6-spustenie-webovej-appky-vo-vs-code)
 7. [Celý postup pri lete](#7-celý-postup-pri-lete)
 8. [Riešenie problémov](#8-riešenie-problémov)
 9. [Technické detaily](#9-technické-detaily)
@@ -34,7 +34,7 @@ Systém má tri časti:
 2. **GroundStation** je druhé ESP32 s rovnakým rádiom. Čaká na správy zo satelitu a každú prijatú pošle cez USB kábel do počítača.
 3. **cansat-app** je webová stránka. Otvorí sa v prehliadači, cez USB číta dáta z pozemnej stanice a kreslí z nich grafy. Lety sa dajú uložiť a neskôr znova pozrieť.
 
-Programy pre ESP32 sú napísané v **C++** (jazyk Arduino). Aby sa dostali do dosky, treba ich **skompilovať** (preložiť do strojového kódu, ktorému ESP32 rozumie) a **nahrať** cez USB. Na oboje používame nástroj **PlatformIO**.
+Programy pre ESP32 sú napísané v **C++** (jazyk Arduino). Aby sa dostali do dosky, treba ich **skompilovať** (preložiť do strojového kódu, ktorému ESP32 rozumie) a **nahrať** cez USB. Na oboje používame rozšírenie **PlatformIO** vo VS Code.
 
 ---
 
@@ -78,163 +78,143 @@ lib_deps =                 ; knižnice, ktoré sa stiahnu automaticky
 
 Toto stačí urobiť raz na každom počítači. Návod je pre **Windows**.
 
-### 3.1 Python
+### 3.1 Visual Studio Code
 
-PlatformIO je napísané v Pythone, takže ho potrebuje.
+VS Code je editor kódu – v ňom budeš kód otvárať, upravovať a nahrávať do ESP32.
 
-1. Choď na https://www.python.org/downloads/ a stiahni najnovšiu verziu.
-2. Spusti inštalátor a **úplne dole zaškrtni „Add python.exe to PATH“** (veľmi dôležité – inak terminál Python nenájde).
-3. Klikni **Install Now**.
+1. Choď na https://code.visualstudio.com/ a klikni **Download for Windows**.
+2. Spusti inštalátor. Pri voľbách zaškrtni **„Add to PATH“** a **„Add 'Open with Code' action…“** (potom vieš otvoriť priečinok pravým klikom).
+3. Dokonči inštaláciu a VS Code spusti.
 
 ### 3.2 Git
 
-Git slúži na stiahnutie projektu z GitHubu.
+Git slúži na stiahnutie projektu z GitHubu (a neskôr na nahrávanie zmien).
 
 1. Choď na https://git-scm.com/download/win a stiahni inštalátor.
 2. Prejdi ho s predvolenými nastaveniami (stále **Next**).
+3. **Reštartuj VS Code**, aby o Gite vedel.
 
-### 3.3 Node.js (len ak chceš spúšťať webovú appku)
+> Bez Gitu sa dá projekt stiahnuť aj ako ZIP – na stránke repozitára zelené tlačidlo **Code → Download ZIP** a rozbaliť.
+
+### 3.3 Rozšírenie PlatformIO IDE
+
+PlatformIO je doplnok do VS Code, ktorý vie kód pre ESP32 skompilovať (preložiť do strojového kódu) a nahrať do dosky. Python, ktorý potrebuje, si nainštaluje sám.
+
+1. Vo VS Code klikni vľavo na ikonu **Extensions** (štyri štvorčeky) alebo stlač **Ctrl+Shift+X**.
+2. Do vyhľadávania napíš **PlatformIO IDE**.
+3. Pri rozšírení od **PlatformIO** klikni **Install**.
+4. Počkaj – vpravo dole sa ukazuje priebeh inštalácie. **Prvá inštalácia trvá aj niekoľko minút.**
+5. Keď vyskočí hláška, že treba reštartovať, klikni **Reload Now** (alebo VS Code zavri a otvor).
+
+Po inštalácii pribudne vľavo ikona **mravčej hlavy 👽** (PlatformIO) a dole v modrej lište nové tlačidlá.
+
+### 3.4 Node.js (len ak chceš spúšťať webovú appku)
 
 1. Choď na https://nodejs.org/ a stiahni verziu **LTS**.
 2. Nainštaluj s predvolenými nastaveniami.
+3. **Reštartuj VS Code.**
 
-### 3.4 Ovládač pre ESP32
+### 3.5 Ovládač pre ESP32
 
 Aby Windows rozpoznal ESP32 pripojené cez USB, potrebuje ovládač. Na doske je jeden z dvoch USB čipov (býva na ňom napísané):
 
 - **CP2102** → ovládač: https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
 - **CH340** → ovládač: https://www.wch-ic.com/downloads/CH341SER_EXE.html
 
-Ak nevieš, ktorý máš, pripoj dosku a pozri **Správcu zariadení** (pravý klik na Štart → Správca zariadení). Ak je v sekcii **Porty (COM a LPT)** niečo ako „USB-SERIAL CH340 (COM5)“ alebo „Silicon Labs CP210x (COM5)“, ovládač už máš.
-
-### 3.5 Otvorenie terminálu
-
-Všetky ďalšie príkazy sa píšu do terminálu:
-
-- stlač **Win**, napíš **PowerShell** a stlač **Enter**.
-
-Do okna, ktoré sa otvorí, sa príkaz napíše (alebo vloží pravým klikom) a potvrdí **Enterom**.
-
-> ⚠️ Po inštalácii programov **zavri terminál a otvor nový** – starý o nových programoch ešte nevie.
-
-### 3.6 PlatformIO
-
-V termináli spusti:
-
-```bash
-pip install platformio
-```
-
-`pip` je inštalátor balíčkov pre Python – stiahne a nainštaluje PlatformIO.
-
-### 3.7 Overenie
-
-Zavri terminál, otvor nový a spusti tieto príkazy po jednom. Každý by mal vypísať číslo verzie:
-
-```bash
-python --version
-```
-```bash
-git --version
-```
-```bash
-pio --version
-```
-```bash
-node --version
-```
-
-Ak niektorý vypíše chybu „is not recognized“, pozri [Riešenie problémov](#8-riešenie-problémov).
+Ak nevieš, ktorý máš, pripoj dosku a otvor **Správcu zariadení** (pravý klik na Štart → Správca zariadení). Ak je v sekcii **Porty (COM a LPT)** niečo ako „USB-SERIAL CH340 (COM5)“ alebo „Silicon Labs CP210x (COM5)“, ovládač už máš. Číslo v zátvorke (napr. **COM5**) je port dosky.
 
 ---
 
-## 4. Stiahnutie projektu
+## 4. Stiahnutie projektu vo VS Code
 
-V termináli sa najprv presuň tam, kam chceš projekt uložiť (napríklad na Plochu):
+1. Vo VS Code stlač **Ctrl+Shift+P** (otvorí sa príkazový riadok hore).
+2. Napíš **Git: Clone** a stlač **Enter**.
+3. Vlož adresu:
 
-```bash
-cd $HOME\Desktop
-```
+   ```
+   https://github.com/JakubG8/cansat.git
+   ```
 
-`cd` znamená *change directory* – „choď do priečinka“.
+   a stlač **Enter**.
+4. Vyber priečinok, kam sa má projekt uložiť (napr. **Dokumenty**) a klikni **Select as Repository Destination**.
+5. Po stiahnutí sa VS Code opýta, či ho chceš otvoriť – klikni **Open**.
 
-Stiahni projekt:
-
-```bash
-git clone https://github.com/JakubG8/cansat.git
-```
-
-Na Ploche sa vytvorí priečinok `cansat` so všetkými súbormi. Presuň sa doň:
-
-```bash
-cd cansat
-```
+Vľavo v **Explorer** (ikona dvoch papierov, **Ctrl+Shift+E**) teraz vidíš všetky súbory projektu.
 
 ---
 
-## 5. Nahratie programu do ESP32 cez terminál
+## 5. Nahratie programu do ESP32 vo VS Code
 
-Postup je **rovnaký pre CanSat aj GroundStation** – líši sa len priečinok, do ktorého vojdeš. Nižšie je príklad pre CanSat.
+Postup je **rovnaký pre CanSat aj GroundStation** – líši sa len to, ktorý priečinok otvoríš. Nižšie je príklad pre CanSat.
 
-### 5.1 Vojdi do priečinka projektu
+### 5.1 Otvor priečinok projektu
 
-```bash
-cd PlatformIO\Projects\CanSat
-```
+PlatformIO potrebuje, aby bol otvorený **priamo priečinok s `platformio.ini`** – nie celý repozitár. Inak dole v lište nebudú tlačidlá na nahratie.
 
-(pre pozemnú stanicu: `cd PlatformIO\Projects\GroundStation`)
+1. **File → Open Folder…** (**Ctrl+K Ctrl+O**).
+2. Prejdi do `cansat\PlatformIO\Projects\` a vyber priečinok **`CanSat`** (pre pozemnú stanicu **`GroundStation`**).
+3. Klikni **Select Folder**. Ak sa VS Code opýta „Do you trust the authors…“, klikni **Yes, I trust the authors**.
 
-PlatformIO príkazy treba spúšťať v priečinku, kde je súbor `platformio.ini` – podľa neho vie, čo robiť. Či si na správnom mieste, overíš príkazom `dir` – vo výpise musí byť `platformio.ini`.
+**Pri prvom otvorení** PlatformIO automaticky sťahuje kompilátor pre ESP32 a knižnice zo `platformio.ini` (LoRa, BME680, GPS …). Vpravo dole uvidíš „PlatformIO: Configuring project“ / „Installing…“. **Počkaj, kým to skončí** (pár minút, len prvýkrát).
 
-### 5.2 Pripoj ESP32 a zisti port
+Program nájdeš vľavo v Exploreri v **`src\main.cpp`**.
 
-Pripoj dosku USB káblom (musí to byť dátový kábel, nie len nabíjací) a spusti:
+### 5.2 Spodná lišta PlatformIO
 
-```bash
-pio device list
-```
+Po otvorení projektu sa v modrej lište dole objavia tlačidlá:
 
-Vypíše zoznam zariadení, napríklad:
+| Ikona | Názov | Čo robí |
+|---|---|---|
+| 🏠 | PlatformIO Home | úvodná stránka PlatformIO |
+| ✓ | **Build** | skompiluje kód – overí, či je bez chýb |
+| → | **Upload** | skompiluje a nahrá do dosky |
+| 🗑 | Clean | zmaže skompilované súbory (keď sa niečo zasekne) |
+| 🔌 | **Serial Monitor** | zobrazí, čo doska vypisuje |
+| >_ | PlatformIO Terminal | terminál s príkazmi `pio` |
+| 🔌 Auto | **port** | na ktorý USB port sa nahráva |
 
-```
-COM5
-----
-Hardware ID: USB VID:PID=10C4:EA60 ...
-Description: Silicon Labs CP210x USB to UART Bridge (COM5)
-```
+Keď prejdeš myšou nad ikonu, zobrazí sa jej názov.
 
-**COM5** je port, cez ktorý sa s doskou komunikuje. Zapamätaj si ho – u teba môže byť iné číslo.
+Tie isté akcie nájdeš aj po kliknutí na ikonu **👽 PlatformIO** vľavo → **PROJECT TASKS → esp32dev → General**.
 
-### 5.3 Skompiluj a nahraj program
+### 5.3 Pripoj ESP32 a nastav port
 
-```bash
-pio run -t upload --upload-port COM5
-```
+1. Pripoj dosku USB káblom (musí to byť **dátový** kábel, nie len nabíjací).
+2. V `platformio.ini` projektu **CanSat** je napevno nastavený port:
 
-(`COM5` nahraď svojím portom)
+   ```ini
+   upload_port = COM5
+   monitor_port = COM5
+   ```
 
-Čo sa pritom deje:
+   Ak má tvoja doska iné číslo portu (pozri kapitolu 3.5), **prepíš COM5 na svoje** a ulož (**Ctrl+S**).
+   Alebo tieto dva riadky zmaž – potom PlatformIO nájde dosku samo, prípadne port vyberieš kliknutím na **🔌 Auto** v dolnej lište.
 
-1. **Prvé spustenie trvá niekoľko minút.** PlatformIO si stiahne kompilátor pre ESP32 a všetky knižnice zo `platformio.ini` (LoRa, BME680, GPS …). Nabudúce to už bude rýchle.
-2. **Kompilácia** – C++ kód sa preloží do strojového kódu. Uvidíš riadky ako `Compiling .pio/build/...`.
-3. **Nahrávanie** – výsledok sa pošle do dosky. Uvidíš `Connecting....` a potom percentá `Writing at 0x... (35 %)`.
-4. Na konci musí byť:
+   GroundStation port nastavený nemá, takže dosku nájde samo.
+
+### 5.4 Skompiluj a nahraj
+
+1. Klikni na **✓ Build** v dolnej lište.
+   Dole sa otvorí okno **Terminal** a ukazuje priebeh kompilácie. Na konci musí byť:
 
    ```
-   ======== [SUCCESS] Took 25.31 seconds ========
+   ======== [SUCCESS] Took 12.34 seconds ========
    ```
+
+   Ak je tam **[FAILED]**, nad tým je červeno vypísané, na ktorom riadku je chyba.
+2. Klikni na **→ Upload**.
+   Uvidíš `Connecting....` a potom percentá `Writing at 0x... (35 %)`. Na konci opäť **[SUCCESS]**.
 
 > 💡 Ak sa to zasekne na `Connecting.......`, **podrž na doske tlačidlo BOOT**, kým sa nezačnú ukazovať percentá, potom ho pusti.
 
 Po nahratí sa program v doske **hneď spustí** a zostane v nej aj po odpojení – pri ďalšom zapnutí (aj z batérie) sa spustí sám.
 
-### 5.4 Pozri, čo doska robí
+### 5.5 Pozri, čo doska robí – Serial Monitor
 
-```bash
-pio device monitor --port COM5 --baud 115200
-```
+Klikni na **🔌 Serial Monitor** v dolnej lište. Dole sa zobrazí všetko, čo program vypisuje cez `Serial.println(...)`.
 
-Toto zobrazí všetko, čo program vypisuje cez `Serial.println(...)`. `115200` je rýchlosť komunikácie – musí sedieť s tou v programe, inak uvidíš nezmyselné znaky.
+> Ak vidíš nezmyselné znaky, je zlá rýchlosť – musí byť **115200** (je nastavená v `platformio.ini` ako `monitor_speed`).
+> Ak monitor nič nevypisuje, stlač na doske tlačidlo **EN** (reset) – program sa spustí odznova a uvidíš aj úvodné správy.
 
 **CanSat** by mal po štarte vypísať:
 
@@ -272,63 +252,55 @@ SNR: 9.75
 
 **RSSI** je sila signálu (bližšie k 0 = silnejší, okolo −120 už signál končí), **SNR** je kvalita signálu.
 
-Monitor ukončíš klávesmi **Ctrl+C**.
+Monitor zavrieš kliknutím na **🗑 (Kill Terminal)** vpravo hore v okne terminálu alebo klávesmi **Ctrl+C**.
 
-### 5.5 Prehľad príkazov
-
-| Príkaz | Čo robí |
-|---|---|
-| `pio device list` | ukáže pripojené dosky a ich porty |
-| `pio run` | len skompiluje – overí, či je v kóde chyba |
-| `pio run -t upload --upload-port COM5` | skompiluje a nahrá do dosky |
-| `pio device monitor --port COM5 --baud 115200` | zobrazí výpis z dosky |
-| `pio run -t upload -t monitor --upload-port COM5` | nahrá a hneď zobrazí výpis |
-| `pio run -t clean` | zmaže skompilované súbory, keď sa niečo zasekne |
+> ⚠️ Pred ďalším **Upload** monitor nemusíš zatvárať – PlatformIO ho zavrie samo. Ale **pred pripojením appky** ho zavrieť musíš (kapitola 6).
 
 ### 5.6 Keď zmeníš kód
 
-Uprav `src\main.cpp` (napr. v Poznámkovom bloku alebo VS Code), ulož a znova spusti:
+1. Uprav `src\main.cpp`.
+2. Ulož (**Ctrl+S**).
+3. Klikni **→ Upload**.
 
-```bash
-pio run -t upload --upload-port COM5
-```
+### 5.7 Prepnutie na druhý projekt
+
+Na nahratie GroundStation: **File → Open Folder…** → `cansat\PlatformIO\Projects\GroundStation` a zopakuj kroky 5.3–5.5 (s druhou doskou).
+
+Ak chceš mať oba projekty otvorené naraz, otvor druhý v novom okne: **File → New Window** a v ňom **Open Folder**.
 
 ---
 
-## 6. Spustenie webovej appky
+## 6. Spustenie webovej appky vo VS Code
 
-Z hlavného priečinka `cansat` choď do appky:
+1. **File → Open Folder…** → vyber priečinok **`cansat\cansat-app`**.
+2. Otvor terminál: **Terminal → New Terminal** (**Ctrl+ö**, na anglickej klávesnici **Ctrl+`**). Dole sa zobrazí okno, kde sa píšu príkazy.
+3. Nainštaluj knižnice (len prvýkrát, trvá to chvíľu):
 
-```bash
-cd cansat-app
-```
+   ```bash
+   npm install
+   ```
 
-Nainštaluj knižnice (len prvýkrát, trvá to chvíľu):
+   `npm` je inštalátor balíčkov pre JavaScript – podľa `package.json` stiahne všetko, čo appka potrebuje, do priečinka `node_modules`.
+4. Spusti appku:
 
-```bash
-npm install
-```
+   ```bash
+   npm run dev
+   ```
 
-`npm` je inštalátor balíčkov pre JavaScript – podľa `package.json` stiahne všetko, čo appka potrebuje, do priečinka `node_modules`.
+   Vypíše adresu, typicky:
 
-Spusti appku:
+   ```
+     ➜  Local:   http://localhost:5173/
+   ```
 
-```bash
-npm run dev
-```
+5. Podrž **Ctrl** a klikni na adresu – otvorí sa v prehliadači. Použi **Chrome alebo Edge**.
 
-Vypíše adresu, typicky:
-
-```
-  ➜  Local:   http://localhost:5173/
-```
-
-Otvor ju v prehliadači **Chrome alebo Edge**. Appka beží, kým je terminál otvorený – zastavíš ju **Ctrl+C**.
+Appka beží, kým je terminál otvorený – zastavíš ju klávesmi **Ctrl+C** v termináli.
 
 ### Pripojenie pozemnej stanice do appky
 
 1. Pripoj GroundStation cez USB.
-2. **Zavri `pio device monitor`**, ak beží – port môže naraz používať len jeden program.
+2. **Zavri Serial Monitor v PlatformIO**, ak beží – port môže naraz používať len jeden program.
 3. V appke klikni na červené tlačidlo **⏹ GS DISCONNECTED**.
 4. Prehliadač ponúkne zoznam portov – vyber ten so stanicou a klikni **Pripojiť**.
 5. Tlačidlo zozelenie (**🔌 GS CONNECTED**) a grafy sa začnú plniť.
@@ -356,11 +328,14 @@ Appka si z výpisu stanice berie len riadky začínajúce `>>>` – to sú dáta
 
 | Problém | Riešenie |
 |---|---|
-| `'pio' is not recognized` | Zavri a otvor nový terminál. Ak to nepomôže, Python nebol pridaný do PATH – preinštaluj ho so zaškrtnutým „Add python.exe to PATH“, alebo používaj `python -m platformio` namiesto `pio`. |
-| `pio device list` nič nevypíše | Skús iný USB kábel (veľa káblov je len nabíjacích) a iný USB port. Nainštaluj ovládač (kapitola 3.4). |
+| V dolnej lište nie sú tlačidlá ✓ → 🔌 | Nemáš otvorený priečinok s `platformio.ini`. Daj **File → Open Folder** a vyber priamo `PlatformIO\Projects\CanSat` (alebo `GroundStation`). Ak sú stále preč, počkaj, kým PlatformIO dokončí inštaláciu (vpravo dole), alebo reštartuj VS Code. |
+| `Git: Clone` sa nedá nájsť / „git not found“ | Git nie je nainštalovaný alebo VS Code nebol po inštalácii reštartovaný (kapitola 3.2). Alebo stiahni projekt ako ZIP. |
+| `npm` is not recognized | Node.js nie je nainštalovaný, alebo treba reštartovať VS Code (kapitola 3.4). |
+| Build hlási chybu pri knižniciach | Klikni **🗑 Clean** a potom znova **✓ Build**. Over pripojenie na internet – knižnice sa sťahujú. |
+| Doska sa nenájde / `No serial port found` | Skús iný USB kábel (veľa káblov je len nabíjacích) a iný USB port. Nainštaluj ovládač (kapitola 3.5). Over port v `platformio.ini` (kapitola 5.3). |
 | Zasekne sa na `Connecting.......` | Pri nahrávaní podrž tlačidlo **BOOT** na doske. |
-| `could not open port 'COM5'` / `Access is denied` | Port používa iný program – zavri `pio device monitor`, Arduino IDE, appku v prehliadači alebo iný terminál. |
-| V monitore sú nezmyselné znaky | Zlá rýchlosť – použi `--baud 115200`. |
+| `could not open port 'COM5'` / `Access is denied` | Port používa iný program – zavri Serial Monitor, Arduino IDE, appku v prehliadači alebo druhé okno VS Code. |
+| V monitore sú nezmyselné znaky | Zlá rýchlosť – v `platformio.ini` musí byť `monitor_speed = 115200`. |
 | `LoRa FAIL` | Skontroluj zapojenie rádia (kapitola 9) a či má rádio anténu. |
 | `BME FAIL` / `MPU FAIL` | Skontroluj zapojenie SDA/SCL a napájanie senzora. |
 | `SD FAIL` | Karta nie je vložená, nie je naformátovaná na FAT32, alebo je zle zapojená. |
@@ -427,3 +402,14 @@ Keď hodnota nie je k dispozícii, je tam `NA`. Na SD karte je ten istý obsah a
 ### Webová appka
 
 React + Vite, dáta zo stanice číta cez Web Serial API, lety ukladá do Firebase Firestore (projekt `cansat-3bfmetallican`).
+
+### Bez VS Code (len terminál)
+
+Ak máš PlatformIO nainštalované ako príkaz (`pip install platformio`), v priečinku projektu (`PlatformIO\Projects\CanSat` alebo `GroundStation`):
+
+| Príkaz | Čo robí |
+|---|---|
+| `pio device list` | ukáže pripojené dosky a ich porty |
+| `pio run` | skompiluje |
+| `pio run -t upload --upload-port COM5` | skompiluje a nahrá do dosky |
+| `pio device monitor --port COM5 --baud 115200` | zobrazí výpis z dosky |
