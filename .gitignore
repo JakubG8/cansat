@@ -1,0 +1,12 @@
+# Do repozitara ide len webova appka a dva firmware projekty
+/*
+!/.gitignore
+!/README.md
+!/cansat-app/
+
+!/PlatformIO/
+/PlatformIO/*
+!/PlatformIO/Projects/
+/PlatformIO/Projects/*
+!/PlatformIO/Projects/CanSat/
+!/PlatformIO/Projects/GroundStation/
