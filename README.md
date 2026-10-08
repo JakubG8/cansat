@@ -35,12 +35,62 @@ Knižnice (LoRa, BME680, TinyGPSPlus …) netreba inštalovať ručne – Platfo
    Ak upload nejde, podrž na doske tlačidlo **BOOT**, kým sa nezačne nahrávať.
 5. Klikni na **🔌 Serial Monitor** (115200 baud) a uvidíš výpis.
 
-Alebo z terminálu v priečinku projektu:
+### Nahratie z terminálu (bez VS Code)
+
+Postup je rovnaký pre `CanSat` aj `GroundStation`, líši sa len priečinok.
+
+**1. Nainštaluj PlatformIO** (raz, potrebuješ [Python](https://www.python.org/downloads/) 3.8+):
 
 ```bash
-pio run -t upload
-pio device monitor
+pip install platformio
 ```
+
+Over, že funguje: `pio --version`
+
+**2. Stiahni repozitár:**
+
+```bash
+git clone https://github.com/JakubG8/cansat.git
+cd cansat
+```
+
+**3. Choď do priečinka projektu:**
+
+```bash
+cd PlatformIO/Projects/CanSat
+```
+
+(pre pozemnú stanicu `cd PlatformIO/Projects/GroundStation`)
+
+**4. Pripoj ESP32 cez USB a zisti port:**
+
+```bash
+pio device list
+```
+
+**5. Skompiluj a nahraj do dosky** (`COM5` nahraď svojím portom):
+
+```bash
+pio run -t upload --upload-port COM5
+```
+
+Prvý build trvá dlhšie – PlatformIO stiahne kompilátor pre ESP32 a knižnice.
+
+**6. Pozri výpis z dosky:**
+
+```bash
+pio device monitor --port COM5 --baud 115200
+```
+
+Ukončíš ho cez **Ctrl+C**.
+
+Iné užitočné príkazy:
+
+| Príkaz | Čo robí |
+|---|---|
+| `pio run` | len skompiluje (overí, že kód je bez chýb) |
+| `pio run -t clean` | zmaže build, keď sa niečo zasekne |
+| `pio run -t upload -t monitor` | nahrá a hneď otvorí výpis |
 
 ### Zapojenie – CanSat
 
